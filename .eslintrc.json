@@ -1,0 +1,85 @@
+{
+  // =============================================
+  // ESLint Configuration
+  // =============================================
+  // This file configures ESLint for the Angular project.
+  // It sets up rules for TypeScript and HTML files,
+  // ensuring consistent code style and catching potential errors.
+
+  "root": true,  // Indicates this is the root configuration file
+ 
+  "overrides": [
+    {
+      // =============================================
+      // TypeScript Files Configuration
+      // =============================================
+      "files": [
+        "*.ts"  // Apply these rules to all TypeScript files
+      ],
+      "extends": [
+        "eslint:recommended",  // Use recommended ESLint - JS/TS rules
+        "plugin:@typescript-eslint/recommended",  // Use recommended TypeScript rules
+        "plugin:@angular-eslint/recommended",  // Use recommended Angular rules
+        "plugin:@angular-eslint/template/process-inline-templates"  // Process inline templates
+      ],
+      "rules": {
+        // =============================================
+        // Directive Selector Rules
+        // =============================================
+        // Enforce consistent naming for directive selectors
+        "@angular-eslint/directive-selector": [
+          "error",
+          {
+            "type": "attribute",  // Use attribute selectors
+            "prefix": "app",      // Prefix with 'app'
+            "style": "camelCase"  // Use camelCase for names
+          }
+          // Example:
+
+          // <!-- Valid: Uses attribute, starts with 'app', camelCase -->
+          // <div appMyDirective></div>
+          
+          // <!-- Invalid: Wrong prefix -->
+          // <div myDirective></div>
+          
+          // <!-- Invalid: Wrong style (should be camelCase) -->
+          // <div app-my-directive></div>
+        ],
+        // =============================================
+        // Component Selector Rules
+        // =============================================
+        // Enforce consistent naming for component selectors
+        "@angular-eslint/component-selector": [
+          "error",
+          {
+            "type": "element",    // Use element selectors
+            "prefix": "app",      // Prefix with 'app'
+            "style": "kebab-case" // Use kebab-case for names
+          }
+          // Example:
+          // <!-- Valid: Uses element, starts with 'app', kebab-case -->
+          // <app-user-profile></app-user-profile>
+          
+          // <!-- Invalid: Wrong prefix -->
+          // <user-profile></user-profile>
+          
+          // <!-- Invalid: Wrong style (should be kebab-case) -->
+          // <appUserProfile></appUserProfile>
+          
+        ]
+      }
+    },
+    {
+      // =============================================
+      // HTML Files Configuration
+      // =============================================
+      "files": [
+        "*.html"  // Apply these rules to all HTML files
+      ],
+      "extends": [
+        "plugin:@angular-eslint/template/recommended"  // Use recommended Angular template rules
+      ],
+      "rules": {}  // No additional rules for HTML files
+    }
+  ]
+} 

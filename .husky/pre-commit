@@ -1,12 +1,163 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/bin/sh
+
+# =============================================
+# IMPORTANT: Make this file executable after pulling
+# Run: chmod +x .husky/pre-commit
+# =============================================
+
+# Check if only package-lock.json is being committed
+if [ "$(git diff --cached --name-only)" = "package-lock.json" ]; then
+    echo "✅ Committing package-lock.json only - bypassing checks"
+    exit 0
+fi
+
+# This script runs before each commit to ensure code quality and security.
+# It performs several checks to prevent committing sensitive data, 
+# maintain code quality, and ensure the build is working.
 
 echo "Running pre-commit checks..."
 
-# Run Angular linting
-echo "Running Angular linting..."
-ng lint || exit 1
+# =============================================
+# Security Checks (BLOCKING)
+# =============================================
+# Check for sensitive files that should never be committed
+echo "Checking for sensitive files..."
 
-# Run Angular build
-echo "Running Angular build..."
-ng build  || exit 1
+# Define sensitive file patterns
+SENSITIVE_PATTERNS="
+    .env
+    .env.local
+    .env.*
+    *.pem
+    *.key
+    id_rsa
+    id_dsa
+    credentials.json
+    secrets.json
+"
+
+# Check each sensitive pattern
+for pattern in $SENSITIVE_PATTERNS; do
+    if git ls-files | grep -q "$pattern"; then
+        echo "❌ Error: Sensitive file matching '$pattern' detected in commit!"
+        echo "Found the following files:"
+        git ls-files | grep "$pattern" | while read file; do
+            echo "  - $file"
+        done
+        echo "Please remove it and add it to .gitignore"
+        exit 1
+    fi
+done
+
+# =============================================
+# Environment Variables Check (BLOCKING)
+# =============================================
+echo "Checking for environment variables in files..."
+
+# Define sensitive environment patterns
+ENV_PATTERNS="
+    API_KEY
+    SECRET_KEY
+    PASSWORD
+    TOKEN
+    CREDENTIALS
+    PRIVATE_KEY
+    AWS_
+    GOOGLE_
+    FIREBASE_
+"
+
+# Check each environment pattern
+for pattern in $ENV_PATTERNS; do
+    # First get the list of files excluding pre-commit, package-lock.json, and .gitignore
+    FILES_TO_CHECK=$(git diff --cached --name-only | grep -v -E "(.husky/pre-commit|package-lock.json|.gitignore)")
+    
+    echo "  Checking for pattern: $pattern"
+    echo "  Files to check:"
+    echo "$FILES_TO_CHECK" | sed 's/^/    - /'
+    
+    # Show the actual content being checked
+    echo "  Content being checked:"
+    for file in $FILES_TO_CHECK; do
+        echo "    File: $file"
+        git diff --cached "$file" | sed 's/^/      /'
+    done
+    
+    # Then check those files for the pattern
+    if echo "$FILES_TO_CHECK" | xargs grep -l -i "$pattern" 2>/dev/null; then
+        echo "❌ Error: Potential environment variable '$pattern' detected in commit!"
+        echo "Found in the following files:"
+        echo "$FILES_TO_CHECK" | xargs grep -l -i "$pattern" | while read file; do
+            echo "  - $file:"
+            git diff --cached "$file" | grep -i -n "$pattern" | sed 's/^/    /'
+        done
+        echo "Please remove it and use proper environment variable management"
+        exit 1
+    fi
+done
+
+# =============================================
+# Code Quality Checks (BLOCKING)
+# =============================================
+echo "Checking for debugger statements..."
+if grep -r "debugger" src/; then
+    echo "❌ Error: Debugger statements found!"
+    echo "Found in the following files:"
+    grep -r -n "debugger" src/ | while read -r line; do
+        echo "  - $line" | sed 's/:/\n    Line /'
+    done
+    exit 1
+fi
+
+echo "Checking for console.log statements..."
+if grep -r "console.log" src/; then
+    echo "❌ Error: Console.log statements found!"
+    echo "Found in the following files:"
+    grep -r -n "console.log" src/ | while read -r line; do
+        echo "  - $line" | sed 's/:/\n    Line /'
+    done
+    exit 1
+fi
+
+# =============================================
+# Angular Linting (BLOCKING)
+# =============================================
+echo "Running Angular linting..."
+ng lint CRS-Frontend || {
+    echo "❌ Error: Linting failed!"
+    echo "Please fix the linting errors above"
+    exit 1
+}
+
+# =============================================
+# Git & File Size Checks (BLOCKING)
+# =============================================
+# Check package-lock.json
+echo "Checking package-lock.json..."
+if git diff --cached --name-only | grep -xq "package-lock.json"; then
+    echo "❌ Error: package-lock.json changes detected!"
+    echo "Please commit package-lock.json changes separately with:"
+    echo "git commit package-lock.json -m 'chore: update dependencies'"
+    exit 1
+fi
+
+# Check for large files
+echo "Checking for large files..."
+LARGE_FILES=$(find src -type f -size +1M)
+if [ -n "$LARGE_FILES" ]; then
+    echo "❌ Error: Files larger than 1MB found:"
+    echo "$LARGE_FILES" | while read file; do
+        size=$(du -h "$file" | cut -f1)
+        echo "  - $file ($size)"
+    done
+    echo "Please remove large files or use a storage solution"
+    exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
+
+
+
+
+
+
