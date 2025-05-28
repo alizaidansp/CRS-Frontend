@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "Running pre-commit checks..."
+
+# Run Angular linting
+echo "Running Angular linting..."
+ng lint || exit 1
+
+# Run Angular build
+echo "Running Angular build..."
+ng build  || exit 1
