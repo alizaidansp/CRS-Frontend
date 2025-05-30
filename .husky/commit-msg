@@ -1,0 +1,11 @@
+#!/bin/sh
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+echo "Validating commit message..."
+if ! echo "$COMMIT_MSG" | grep -Eq "^(feat|fix|chore|docs|style|refactor|test|perf|ci|build|revert)(\(.+\))?: .+"; then
+  echo "❌ Error: Commit message does not follow Conventional Commits format"
+  echo "Example: feat(auth): add login functionality"
+  exit 1
+fi
