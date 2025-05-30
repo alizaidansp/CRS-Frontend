@@ -1,0 +1,85 @@
+#!/bin/sh
+
+# =============================================
+# IMPORTANT: Make this file executable after pulling
+# Run: chmod +x .husky/pre-commit
+# =============================================
+
+# Check if only package-lock.json is being committed
+if [ "$(git diff --cached --name-only)" = "package-lock.json" ]; then
+    echo "✅ Committing package-lock.json only - bypassing checks"
+    exit 0
+fi
+
+# This script runs before each commit to ensure code quality and security.
+# It performs several checks to prevent committing sensitive data, 
+# maintain code quality, and ensure the build is working.
+
+echo "Running pre-commit checks..."
+
+
+# =============================================
+# Code Quality Checks (BLOCKING)
+# =============================================
+echo "Checking for debugger statements..."
+if grep -r "debugger" src/; then
+    echo "❌ Error: Debugger statements found!"
+    echo "Found in the following files:"
+    grep -r -n "debugger" src/ | while read -r line; do
+        echo "  - $line" | sed 's/:/\n    Line /'
+    done
+    exit 1
+fi
+
+echo "Checking for console.log statements..."
+if grep -r "console.log" src/; then
+    echo "❌ Error: Console.log statements found!"
+    echo "Found in the following files:"
+    grep -r -n "console.log" src/ | while read -r line; do
+        echo "  - $line" | sed 's/:/\n    Line /'
+    done
+    exit 1
+fi
+
+# =============================================
+# Angular Linting (BLOCKING)
+# =============================================
+echo "Running Angular linting..."
+ng lint CRS-Frontend || {
+    echo "❌ Error: Linting failed!"
+    echo "Please fix the linting errors above"
+    exit 1
+}
+
+# =============================================
+# Git & File Size Checks (BLOCKING)
+# =============================================
+# Check package-lock.json
+echo "Checking package-lock.json..."
+if git diff --cached --name-only | grep -xq "package-lock.json"; then
+    echo "❌ Error: package-lock.json changes detected!"
+    echo "Please commit package-lock.json changes separately with:"
+    echo "git commit package-lock.json -m 'chore: update dependencies'"
+    exit 1
+fi
+
+# Check for large files
+echo "Checking for large files..."
+LARGE_FILES=$(find src -type f -size +1M)
+if [ -n "$LARGE_FILES" ]; then
+    echo "❌ Error: Files larger than 1MB found:"
+    echo "$LARGE_FILES" | while read file; do
+        size=$(du -h "$file" | cut -f1)
+        echo "  - $file ($size)"
+    done
+    echo "Please remove large files or use a storage solution"
+    exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
+
+
+
+
+
+
