@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "prepare": "husky",
+    "setup": "node scripts/setup-husky.js",
     "test": "jest --verbose",
     "test:coverage": "jest --coverage",
     "test:failures": "jest --onlyFailures --coverage",
