@@ -42,6 +42,17 @@ if grep -r "console.log" src/; then
 fi
 
 # =============================================
+# Code Formatting (BLOCKING)
+# =============================================
+echo "Running code formatter..."
+npm run format || {
+    echo "❌ Error: Code formatting failed!"
+    echo "Please fix the formatting issues above"
+    exit 1
+}
+
+
+# =============================================
 # Angular Linting (BLOCKING)
 # =============================================
 echo "Running Angular linting..."
