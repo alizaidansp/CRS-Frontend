@@ -3,10 +3,10 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 @Component({
   selector: "app-root",
   imports: [],
-  templateUrl: "./app.component.html",
-  styleUrl: "./app.component.scss",
+  templateUrl: "./app.html",
+  styleUrl: "./app.scss",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent {
+export class App {
   public title = "CRS-Frontend";
 }
