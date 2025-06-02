@@ -5,7 +5,10 @@
   "projects": {
     "CRS-Frontend": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        } },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -25,9 +28,9 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [ ]
           },
           "configurations": {
             "production": {
@@ -71,6 +74,24 @@
             "buildTarget": "CRS-Frontend:build"
           }
         },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
+            "tsConfig": "tsconfig.spec.json",
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
+            "styles": [
+              "src/styles.scss"
+            ],
+            "scripts": [ ]
+          }
+        },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
@@ -83,7 +104,15 @@
       }
     }
   },
+  "schematics": {
+    "@schematics/angular:component": {
+      "style": "scss"
+    }
+  },
   "cli": {
-    "analytics": "9735a56a-f4e3-4c59-b6a6-7831f7aa12dc"
+    "analytics": "9735a56a-f4e3-4c59-b6a6-7831f7aa12dc",
+    "schematicCollections": [
+      "@angular-eslint/schematics"
+    ]
   }
 }

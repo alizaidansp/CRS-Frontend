@@ -27,8 +27,9 @@ describe("AppComponent", () => {
 
   it("should render the title", () => {
     const compiled = fixture.nativeElement as HTMLElement;
+
     expect(compiled.querySelector(".content span")?.textContent).toContain(
-      "Explore the Docs"
+      "Explore the Docs",
     );
   });
 });
