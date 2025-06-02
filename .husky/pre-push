@@ -1,0 +1,39 @@
+#!/bin/sh
+# This hook validates branch names according to the project's convention
+#
+# Valid types are:
+#   feature/ - for new features
+#   bugfix/  - for bug fixes
+#   hotfix/  - for urgent fixes
+#   release/ - for release branches
+#
+# The description part should be lowercase, can contain numbers and hyphens
+# It automatically allows main, master, and develop branches without validation
+#
+# Examples of valid branch names:
+#   feature/user-authentication
+#   bugfix/login-error
+#   hotfix/security-patch
+#   release/v1.2.0
+#
+# The hook will prevent pushing if the branch name doesn't follow the convention
+
+# Get the current branch name
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+
+# Skip validation for main/master and develop branches
+if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "develop" ]; then
+  exit 0
+fi
+
+# Check if branch name follows the convention
+if ! echo "$BRANCH_NAME" | grep -Eq "^(feature|bugfix|hotfix|release)/[a-z0-9-]+$"; then
+  echo "❌ Error: Branch name '$BRANCH_NAME' does not follow the naming convention"
+  echo "Branch names should be in the format: type/description"
+  echo "Valid types: feature, bugfix, hotfix, release"
+  echo "Example: feature/user-authentication"
+  exit 1
+fi
+
+echo "✅ Branch name validation passed"
+exit 0 
