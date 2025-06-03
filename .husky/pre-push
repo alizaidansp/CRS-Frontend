@@ -22,7 +22,7 @@
 BRANCH_NAME=$(git symbolic-ref --short HEAD)
 
 # Skip validation for main/master and develop branches
-if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "develop" ]; then
+if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "dev" ]; then
   exit 0
 fi
 
