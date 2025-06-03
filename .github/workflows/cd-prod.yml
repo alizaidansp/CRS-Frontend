@@ -3,7 +3,7 @@
 # when changes are pushed to the main branch.
 # Includes additional security checks for production deployment.
 
-name: CD - Production
+name: CD - Main Branch (Production)
 
 # Trigger only on pushes to main branch
 on:
@@ -34,7 +34,7 @@ jobs:
 
     # Upload Trivy scan results to GitHub Security
     - name: Upload Trivy scan results to GitHub Security
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
         category: 'Trivy Scan'

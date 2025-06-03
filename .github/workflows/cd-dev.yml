@@ -2,7 +2,7 @@
 # This workflow deploys the application to the staging environment
 # when changes are pushed to the dev branch.
 
-name: CD - Staging
+name: CD - Dev Branch
 
 # Trigger only on pushes to dev branch
 on:
@@ -33,7 +33,7 @@ jobs:
 
     # Upload Trivy scan results to GitHub Security
     - name: Upload Trivy scan results to GitHub Security
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
         category: 'Trivy Scan'
