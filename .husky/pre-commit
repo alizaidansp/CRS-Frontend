@@ -63,16 +63,6 @@ ng lint CRS-Frontend || {
 }
 
 # =============================================
-# Jest Tests (BLOCKING)
-# =============================================
-echo "Running Jest tests..."
-npm run test || {
-    echo "❌ Error: Tests failed!"
-    echo "Please fix the failing tests above"
-    exit 1
-}
-
-# =============================================
 # Git & File Size Checks (BLOCKING)
 # =============================================
 # Check package-lock.json

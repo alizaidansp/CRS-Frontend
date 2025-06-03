@@ -1,15 +1,4 @@
 #!/bin/sh
-# This command sets the Git hooks directory to `.husky`,
-# enabling Husky to manage and run pre-defined Git hooks such as commit message validation.
-# Run this if your commits are not being validated according to the project's convention.
-# $ git config core.hooksPath .husky
-
-
-
-# =============================================
-# Commit Message convention check (BLOCKING)
-# =============================================
-# Check commit message conventions
 
 COMMIT_MSG_FILE=$1
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
