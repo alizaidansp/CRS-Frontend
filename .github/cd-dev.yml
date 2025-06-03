@@ -1,0 +1,126 @@
+# Continuous Deployment - Staging Environment
+# This workflow deploys the application to the staging environment
+# when changes are pushed to the dev branch.
+
+name: CD - Staging
+
+# Trigger only on pushes to dev branch
+on:
+  push:
+    branches: [ 'dev' ]
+
+jobs:
+  # First job: Security scanning with Trivy
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Run Trivy vulnerability scanner
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'  # Same as production for staging
+        timeout: '5m'
+        scanners: 'vuln,config'
+
+    # Upload Trivy scan results to GitHub Security
+    - name: Upload Trivy scan results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+        category: 'Trivy Scan'
+
+  # Second job: Run quality checks before deployment
+  validate:
+    needs: security-scan
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Check for debugger statements that shouldn't be in staging
+    - name: Check for debugger statements
+      run: |
+        echo "Checking for debugger statements..."
+        if grep -r "debugger" src/; then
+          echo "❌ Error: Debugger statements found!"
+          echo "Found in the following files:"
+          grep -r -n "debugger" src/ | while read -r line; do
+            echo "  - $line" | sed 's/:/\n    Line /'
+          done
+          exit 1
+        fi
+        echo "✅ No debugger statements found"
+
+    # Check for console.log statements that shouldn't be in staging
+    - name: Check for console.log statements
+      run: |
+        echo "Checking for console.log statements..."
+        if grep -r "console.log" src/; then
+          echo "❌ Error: Console.log statements found!"
+          echo "Found in the following files:"
+          grep -r -n "console.log" src/ | while read -r line; do
+            echo "  - $line" | sed 's/:/\n    Line /'
+          done
+          exit 1
+        fi
+        echo "✅ No console.log statements found"
+
+    # Check for files that are too large (>5MB)
+    - name: Check for large files
+      run: |
+        echo "Checking for large files..."
+        LARGE_FILES=$(find src -type f -size +5M)
+        if [ -n "$LARGE_FILES" ]; then
+          echo "❌ Error: Files larger than 5MB found:"
+          echo "$LARGE_FILES" | while read file; do
+            size=$(du -h "$file" | cut -f1)
+            echo "  - $file ($size)"
+          done
+          echo "Please remove large files or use a storage solution"
+          exit 1
+        fi
+        echo "✅ No large files found"
+
+  # Third job: Deploy to staging environment
+  deploy:
+    needs: [security-scan, validate]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Set up Node.js environment
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    # Install dependencies
+    - name: Install dependencies
+      run: npm ci
+      
+    # Run Angular linting
+    - name: Run linting
+      run: npm run lint
+      
+    # Run Jest tests
+    - name: Run tests
+      run: npm run test
+      
+    # Build the application
+    - name: Build
+      run: npm run build
+      
+    # Deploy to staging environment
+    - name: Deploy to staging
+      run: |
+        # Add your staging deployment steps here
+        echo "Deploying to staging environment..." 
